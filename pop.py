@@ -25,7 +25,7 @@ def sracp(url,c):
     df= df[['Rank','Country', 'Team']]
     df= df.head(50)
 
-    df[['University', 'Participants']] = df['Team'].str.extract(r'(.+)\)\:(.+)')
+    df[['University','Teams', 'Participants']] = df['Team'].str.extract(r'(.+)\((.+)\)\:(.+)')
 # Eliminar los caracteres ':' y ',' de la lista de participantes
 
 
@@ -39,7 +39,7 @@ def sracp(url,c):
             return [value]
     df["Anno"]=c
     df['Participants'] = df['Participants'].apply(convert_to_list)
-    df.set_index('University', inplace=True)
+    df.set_index('Teams', inplace=True)
     json2019 = df.T.to_json()
     return json2019
 json_data={}
