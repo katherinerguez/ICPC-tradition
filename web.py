@@ -38,6 +38,16 @@ new_df=df
 
 new_df=new_df[new_df['University'].isin(top_50['University'])]
 new_df = new_df.reset_index(drop=True)
+#ranking
+ranking = pd.merge(top_50, new_df, on="University", how="inner")
+u_ranking = ranking[['University', 'Point', "Country", "Prize"]]
+u_ranking = ranking.drop(columns=['Point', "Prize"])
+u_ranking = u_ranking.reindex(columns=['University', 'Country'])
+u_ranking = u_ranking.drop_duplicates(subset=["University"])
+u_ranking = u_ranking.reset_index(drop=True)
+u_ranking.index += 1
+st.header("Ranking",divider="gray")
+st.dataframe(u_ranking,width=2000)
 
 #Distribucion de universidades por paises 
 st.header("Distribución de las universidades por países", divider= "gray")
@@ -58,6 +68,7 @@ avg_scores_by_year = new_df.groupby('Anno')['Score'].mean().reset_index()
 fig = px.bar(avg_scores_by_year, x='Anno', y='Score', title='Promedio de scores por año')
 st.plotly_chart(fig)
 
+#prize
 new_df['Prize'] = new_df['Prize'].astype(int)
 df_university =new_df.groupby(['University',"Country"])['Prize'].sum().reset_index()
 
