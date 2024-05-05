@@ -57,3 +57,18 @@ avg_scores_by_year = new_df.groupby('Anno')['Score'].mean().reset_index()
 
 fig = px.bar(avg_scores_by_year, x='Anno', y='Score', title='Promedio de scores por año')
 st.plotly_chart(fig)
+
+new_df['Prize'] = new_df['Prize'].astype(int)
+df_university =new_df.groupby(['University',"Country"])['Prize'].sum().reset_index()
+
+df_university=df_university.sort_values('Prize',ascending=False)
+df_university=df_university.head(10)
+new_df1=new_df[new_df["University"].isin(df_university["University"]) ]
+grouped_df = df.groupby(['University', 'Anno'])['Prize'].sum().reset_index()
+
+st.header("Cantidad de dinero obtenido por las universidades", divider= "gray")
+selected_university = st.multiselect('Selecciona las universidades que quieres visualizar:',options=new_df1["University"].unique(), default="Peking University")  
+df_filtered = new_df1[new_df1["University"].isin(selected_university) | (selected_university == [])]  
+fig = px.line(df_filtered, x="Anno", y="Prize", color="University", title='Ganancias en ICPC por universidades', markers=True)
+st.plotly_chart(fig)
+st.write(df_university)
