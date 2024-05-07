@@ -76,7 +76,8 @@ fig = px.bar(grouped_data, x='Country', y='University', title=f'Cantidad de univ
 st.plotly_chart(fig)
 
 #Promedio de scores por anno
-st.header("Scores en la competición", divider="gray")
+st.markdown("Los puntajes en las competencias de ICPC no son necesariamente la misma cantidad de puntos cada año, ya que dependen del nivel de dificultad de los problemas y de la distribución de puntos establecida para esa edición en particular.")
+st.markdown("En general, los puntajes más altos se otorgan a los problemas más difíciles, mientras que los problemas más sencillos otorgan menos puntos. Además, existen reglas específicas sobre cómo se asignan los puntos por cada problema resuelto, teniendo en cuenta factores como el tiempo de resolución y posibles penalizaciones por errores.")
 new_df['Score'] = pd.to_numeric(new_df['Score'], errors='coerce')
 new_df['Score'] = new_df['Score'].fillna(0).astype(int)
 avg_scores_by_year = new_df.groupby('Anno')['Score'].mean().reset_index()
@@ -96,7 +97,7 @@ df_university=df_university.head(10)
 new_df1=new_df[new_df["University"].isin(df_university["University"]) ]
 grouped_df = df.groupby(['University', 'Anno'])['Prize'].sum().reset_index()
 
-st.header("Cantidad de dinero obtenido por las universidades", divider= "gray")
+st.header("Cantidad de dinero obtenido por las universidades")
 st.markdown('Los equipos que terminen en las cuatro primeras posiciones recibirán medallas de oro. Los equipos que finalicen del quinto al octavo lugar recibirán medallas de plata. Aquellos equipos que finalicen del noveno al duodécimo lugar recibirán medallas de bronce. Se podrán otorgar medallas de bronce adicionales.'
 
 'El equipo con mayor puntuación es el Campeón del Mundo y recibirá la Copa de Campeón del Mundo y placas. Los otros doce mejores equipos, los campeones de América del Norte, los campeones de América Latina, los campeones de Europa, los campeones del Pacífico Sur, los campeones de Asia y los campeones de África y Medio Oriente también recibirán placas.'
