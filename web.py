@@ -4,6 +4,7 @@ import plotly.express as px
 import streamlit as st
 import networkx as nx
 import plotly.graph_objects as go
+from datetime import datetime as dt
 
 with open('datos.json','r') as a:
     archivos=json.load(a)
@@ -80,11 +81,53 @@ new_df1=new_df[new_df["University"].isin(df_university["University"]) ]
 grouped_df = df.groupby(['University', 'Anno'])['Prize'].sum().reset_index()
 
 st.header("Cantidad de dinero obtenido por las universidades", divider= "gray")
+st.markdown('Los equipos que terminen en las cuatro primeras posiciones recibirán medallas de oro. Los equipos que finalicen del quinto al octavo lugar recibirán medallas de plata. Aquellos equipos que finalicen del noveno al duodécimo lugar recibirán medallas de bronce. Se podrán otorgar medallas de bronce adicionales.'
+
+'El equipo con mayor puntuación es el Campeón del Mundo y recibirá la Copa de Campeón del Mundo y placas. Los otros doce mejores equipos, los campeones de América del Norte, los campeones de América Latina, los campeones de Europa, los campeones del Pacífico Sur, los campeones de Asia y los campeones de África y Medio Oriente también recibirán placas.'
+
+'El equipo campeón del mundo recibirá 15.000 dólares. Cada uno de los otros tres equipos con medalla de oro recibirá 7.500 dólares. Cada equipo que obtenga la medalla de plata recibirá 6.000 dólares. Cada equipo que obtenga la medalla de bronce recibirá 3.000 dólares.'
+
+'Cortesía de la Sociedad de Honor de Ciencias de la Computación de la UPE, el premio a la primera solución será de 1500 dólares y el primero en resolver el problema "X" será de 1200 dólares (para todos los problemas resueltos excepto el primero).(https://icpc.global/worldfinals/acmicpc)')
 selected_university = st.multiselect('Selecciona las universidades que quieres visualizar:',options=new_df1["University"].unique(), default="Peking University")  
 df_filtered = new_df1[new_df1["University"].isin(selected_university) | (selected_university == [])]  
 fig = px.line(df_filtered, x="Anno", y="Prize", color="University", title='Ganancias en ICPC por universidades', markers=True)
 st.plotly_chart(fig)
 st.write(df_university)
+
+#prize por paises
+st.subheader("Cantidad de dinero obtenido por las universidades distribuido por países", divider= "gray")
+
+new_df['Anno'] = new_df['Anno'].astype(int)
+if 'fecha_minima' not in st.session_state:
+    st.session_state.fecha_minima = dt(new_df['Anno'].min(), 1, 1).date()
+if 'fecha_maxima' not in st.session_state:
+    st.session_state.fecha_maxima = dt(new_df['Anno'].max(), 12, 31).date()
+
+fecha_inicio = st.selectbox("Selecciona el año de inicio", options=range(new_df['Anno'].min(), new_df['Anno'].max() + 1))
+
+fecha_fin = st.selectbox("Selecciona el año de finalización", options=range(new_df['Anno'].min(), new_df['Anno'].max() + 1))
+
+filter = new_df[(new_df['Anno'] >= fecha_inicio) & (new_df['Anno'] <= fecha_fin)]
+
+#grafico de barras por grupos para representar los prizes de paises por annos
+fig_prize = go.Figure()
+
+for i in filter['Country'].unique():
+    fig_prize.add_trace(go.Bar(
+        x=filter[filter['Country'] == i]['Anno'],
+        y=filter[filter['Country'] == i]['Prize'],
+        name=i,
+        marker_color=None 
+    ))
+
+fig_prize.update_layout(
+    title='Cantidad de dinero recibido de las universidades por país',
+    xaxis_title='Año de las competencias',
+    yaxis_title='Cantidad de dinero',
+    barmode='group'
+)
+
+st.plotly_chart(fig_prize)
 
 #transmision de conocimiento
 df=new_df
