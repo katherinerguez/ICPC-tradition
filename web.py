@@ -107,9 +107,9 @@ universidad_seleccionada = st.selectbox("Selecciona una universidad:", list(graf
 grafo_seleccionado = grafos[universidad_seleccionada]
 fig = go.Figure()
 
-pos = nx.spring_layout(grafo_seleccionado)
+pos = nx.spring_layout(grafo_seleccionado, k=20)
 for nodo in grafo_seleccionado.nodes:
-    fig.add_trace(go.Scatter(x=[pos[nodo][0]], y=[pos[nodo][1]], mode='markers+text', text=str(nodo)))
+    fig.add_trace(go.Scatter(x=[pos[nodo][0]], y=[pos[nodo][1]], mode='markers+text', text=str(nodo), marker=dict(size=25),hoverinfo='text', hovertext='<br>'.join(grafo_seleccionado.nodes[nodo]['participants'])))
 for arista in grafo_seleccionado.edges:
     x0, y0 = pos[arista[0]]
     x1, y1 = pos[arista[1]]
