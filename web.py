@@ -9,7 +9,8 @@ from datetime import datetime as dt
 st.title("Título pendiente")
 st.markdown("Toda persona aficionada al mundo de la programación ha escuchado hablar alguna vez sobre la Competencia Internacional Universitaria de Programación, conocida por sus siglas en inglés ICPC (International Collegiate Programming Contest). Esta importante competición desafía a los estudiantes a resolver problemas complejos de programación en un tiempo limitado, poniendo a prueba sus habilidades, creatividad y trabajo en equipo; convirtiéndose en una plataforma perfecta para identificar y promover el talento en informática y ciencias de la computación.")
 st.markdown("En los últimos años, muchas universidades a nivel global han sido representadas con el talento de muchos de sus estudiantes, incluidas las universidades de nuestro país. Por eso hemos analizado cómo se comportan las universidades con mejores resultados en esta competición en los últimos 15 años.")
-st.header("Análisis", divider="gray")
+st.header("Análisis a Nivel Global", divider="gray")
+
 with open('datos.json','r') as a:
     archivos=json.load(a)
 
@@ -106,17 +107,10 @@ st.markdown('Los equipos que terminen en las cuatro primeras posiciones recibir�
 
 'Cortesía de la Sociedad de Honor de Ciencias de la Computación de la UPE, el premio a la primera solución será de 1500 dólares y el primero en resolver el problema "X" será de 1200 dólares (para todos los problemas resueltos excepto el primero).(https://icpc.global/worldfinals/acmicpc)')
 
-st.header("Ranking por prize", divider="gray")
+st.markdown("Si bien cierto que el dinero se le entrega a los miembros del equipo, al analizar esta ganancia monetaria atendiendo a la universidad a la que representan en la competición, observamos que en los últimos 15 años la suma total de las ganancias de los equipos es bastante alta.")
 st.dataframe(df_total,width=1000)
 
-selected_university = st.multiselect('Selecciona las universidades que quieres visualizar:',options=new_df1["University"].unique(), default="Peking University")  
-df_filtered = new_df1[new_df1["University"].isin(selected_university) | (selected_university == [])]  
-fig = px.line(df_filtered, x="Anno", y="Prize", color="University", title='Ganancias en ICPC por universidades', markers=True)
-st.plotly_chart(fig)
-
-#prize por paises
-st.subheader("Cantidad de dinero obtenido por las universidades distribuido por países", divider= "gray")
-
+st.subheader("Cantidad de dinero obtenido por las universidades distribuido por países")
 new_df['Anno'] = new_df['Anno'].astype(int)
 if 'fecha_minima' not in st.session_state:
     st.session_state.fecha_minima = dt(new_df['Anno'].min(), 1, 1).date()
@@ -148,12 +142,18 @@ fig_prize.update_layout(
 )
 
 st.plotly_chart(fig_prize)
+st.subheader('Observe cómo se comportan los prizes en las 10 universidades con más ganancias con el paso del tiempo:')
+selected_university = st.multiselect('Selecciona las universidades que quieres visualizar:',options=new_df1["University"].unique(), default="Peking University")  
+df_filtered = new_df1[new_df1["University"].isin(selected_university) | (selected_university == [])]  
+fig = px.line(df_filtered, x="Anno", y="Prize", color="University", markers=True)
+st.plotly_chart(fig)
 
-#transmision de conocimiento
+#conocimiento
+st.subheader("La transmisión de conocimientos entre los integrantes de un mismo equipo influye en los resultados del equipo?")
+st.markdown("Entre las 50 universidades con mayores resultados en la competición, se observa que en algunas universidades se observa transimisión de conocimiento entre sus integrantes de un año a otro; mientras que existen otras en las que no existe transmisión alguna.")
+st.markdown("Además la transmisión de conocimiento suele observarse por pocos años consecutivos. La universidad con mayor transmisión de conocimiento es la Universidad de Buenos Aires en Argentina-FCEN, la cual se ubica en el lugar 28 del ranking")
 df=new_df
-
 grafos = {}
-
 for universidad in df["University"].unique():
     grafo = nx.Graph()
     for index, row in df[df["University"] == universidad].iterrows():
@@ -166,7 +166,7 @@ for universidad in df["University"].unique():
     
     grafos[universidad] = grafo
 
-universidad_seleccionada = st.selectbox("Selecciona una universidad:", list(grafos.keys()))
+universidad_seleccionada = st.selectbox("Selecciona una universidad y observe si existe o no transmisión de conocimiento", list(grafos.keys()))
 grafo_seleccionado = grafos[universidad_seleccionada]
 fig = go.Figure()
 
@@ -183,3 +183,6 @@ fig.update_layout(title=f"Grafo de {universidad_seleccionada}",
                  yaxis=dict(visible=False))
 
 st.plotly_chart(fig)
+
+st.header("Análisis de Cuba", divider="gray")
+st.markdown("Cuba no tiene un puesto entre las 50 universidades con mejores resultados durante los últimos 15 años, sin embargo su desempeño en estas competiciones merece ser analizado")
