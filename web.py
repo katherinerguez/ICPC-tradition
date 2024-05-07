@@ -57,8 +57,17 @@ st.markdown("Hoy en día Rusia encabeza el ranking con las 3 universidades con m
 st.dataframe(u_ranking,width=2000)
 
 #Distribucion de universidades por paises 
-st.header("Distribución de las universidades por países", divider= "gray")
-selected_year = st.selectbox('Observa cuáles son los países con más universidades compitiendo en este evento en un anno en específico:', sorted(new_df['Anno'].unique()), key='selectbox_year1')
+st.markdown("Rusia no solo se destaca por ser el país con las universidades que encabezan el ranking, sino que junto a China y los Estados Unidos es el país con mayor cantidad universidades exitosas")
+
+universidades_por_anno_por_pais = new_df.groupby(['Country', 'Anno'])['University'].count().reset_index(name='Universidades_Por_Año')
+promedio_universidades_por_pais = universidades_por_anno_por_pais.groupby('Country')['Universidades_Por_Año'].sum().reset_index(name='Total_Universidades')
+promedio_universidades_por_pais['Promedio_Universidades'] = promedio_universidades_por_pais['Total_Universidades'] / len(universidades_por_anno_por_pais['Anno'].unique())
+promedio_universidades_por_pais=promedio_universidades_por_pais.sort_values(by="Promedio_Universidades", ascending=False)
+fig = px.bar(promedio_universidades_por_pais, x='Country', y='Promedio_Universidades', title='Promedio de Universidades por País')
+
+st.plotly_chart(fig)
+
+selected_year = st.selectbox('Observa cuáles son los países con la mayor cantidad de universidades exitosas compitiendo en este evento en un año en específico:', sorted(new_df['Anno'].unique()), key='selectbox_year1')
 filtered_data = new_df[new_df['Anno'] == selected_year]
 grouped_data = filtered_data.groupby('Country')['University'].count().reset_index()
 grouped_data = grouped_data.sort_values(by='University', ascending=False)
