@@ -5,6 +5,7 @@ import streamlit as st
 import networkx as nx
 import plotly.graph_objects as go
 from datetime import datetime as dt
+from genderize import Genderize
 
 st.title("Título pendiente")
 st.markdown("Toda persona aficionada al mundo de la programación ha escuchado hablar alguna vez sobre la Competencia Internacional Universitaria de Programación, conocida por sus siglas en inglés ICPC (International Collegiate Programming Contest). Esta importante competición desafía a los estudiantes a resolver problemas complejos de programación en un tiempo limitado, poniendo a prueba sus habilidades, creatividad y trabajo en equipo; convirtiéndose en una plataforma perfecta para identificar y promover el talento en informática y ciencias de la computación.")
@@ -186,3 +187,77 @@ st.plotly_chart(fig)
 
 st.header("Análisis de Cuba", divider="gray")
 st.markdown("Cuba no tiene un puesto entre las 50 universidades con mejores resultados durante los últimos 15 años, sin embargo su desempeño en estas competiciones merece ser analizado")
+
+with open('datos_cuba.json','r') as d:
+    file=json.load(d)
+data3=pd.DataFrame.from_dict(file, orient='index')
+data3.reset_index(inplace=True)
+data3_combinados=[]
+for i in data3[0]:
+    i_d = json.loads(i)
+    comb=pd.DataFrame.from_dict(i_d, orient='index')
+    data3_combinados.append(comb)
+data_cuba= pd.concat(data3_combinados, ignore_index=True)
+
+#analisis de genero
+# genderize = Genderize()
+# names = genderize.get(data_cuba['Participants'])
+# fig_gener = px.pie(names, names='gender', title='Cantidad de hombres y mujeres que han participado')
+# st.plotly_chart(fig_gener)
+
+#analisis de la participacion de las universidades]
+uni=data_cuba['University'].unique()
+sum=[]
+for i in uni:
+    c=0
+    for j in data_cuba['University']:
+        if j==i:
+            c+=1
+    sum.append(c)
+fig_uni = px.bar(x=uni, y=sum, color=uni,
+                 labels={'x': 'Nombre de las universidades de Cuba',
+                         'y': 'Cantidad de participaciones'},
+                 title='Participación por Universidad en Cuba')
+st.plotly_chart(fig_uni)
+
+#gráfico de puntos para analizar los prizes
+can_prize = data_cuba.groupby('Anno')['Prize'].sum().reset_index()
+
+# Crear gráfico de puntos con la suma de premios por año
+fig = px.scatter(can_prize, x='Anno', y='Prize',
+                 labels={'x': 'Año', 'y': 'Suma de Premios'},
+                 title='Total de Premios por Año')
+
+st.plotly_chart(fig)
+
+#analisis del conocimiento
+graphs = {} 
+
+for u in uni:
+    graph = nx.Graph()
+    for i, j in data_cuba[data_cuba["University"] == u].iterrows():
+        graph.add_node(j["Anno"], participant=j["Participants"]) 
+    for n1, d1 in graph.nodes(data=True):
+        for n2, d2 in graph.nodes(data=True):
+            if n1 != n2 and set(d1['participant']).intersection(set(d2['participant'])):
+                graph.add_edge(n1, n2)
+    
+    graphs[u] = graph
+
+uni_selec = st.selectbox("Selecciona una universidad:", list(graphs.keys()))
+graph_selec = graphs[uni_selec]
+fig_know = go.Figure()
+
+p = nx.spring_layout(graph_selec, k=20)
+for i in graph_selec.nodes:
+    fig_know.add_trace(go.Scatter(x=[p[i][0]], y=[p[i][1]], mode='markers+text', text=str(i), marker=dict(size=25), hoverinfo='text', hovertext='<br>'.join(graph_selec.nodes[i]['participant'])))
+for i in graph_selec.edges:
+    x_0, y_0 = p[i[0]]
+    x_1, y_1 = p[i[1]]
+    fig_know.add_trace(go.Scatter(x=[x_0, x_1], y=[y_0, y_1], mode='lines'))
+
+fig_know.update_layout(title=f"Grafo de {uni_selec}",
+                 xaxis=dict(visible=False),
+                 yaxis=dict(visible=False))
+
+st.plotly_chart(fig_know)
