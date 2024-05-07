@@ -5,7 +5,7 @@ import streamlit as st
 import networkx as nx
 import plotly.graph_objects as go
 from datetime import datetime as dt
-from genderize import Genderize
+#from genderize import Genderize
 
 st.title("Desglosando el Éxito: Universidades más exitosas en el ICPC")
 st.image("trofeo.png")
@@ -56,11 +56,11 @@ u_ranking = u_ranking.reindex(columns=['University', 'Country'])
 u_ranking = u_ranking.drop_duplicates(subset=["University"])
 u_ranking = u_ranking.reset_index(drop=True)
 u_ranking.index += 1
-st.markdown("Hoy en día Rusia encabeza el ranking con las 3 universidades con mejores resultados en la competición, seguida por el Instituto de Tecnología de Massachusetts (MIT) en Estados Unidos y la Universidad Nacional de Taiwán.")
+st.markdown("Hoy en día Rusia encabeza el ranking con dos de las tres universidades con mejores resultados en la competición, seguida por el Instituto de Tecnología de Massachusetts (MIT) en Estados Unidos y la Universidad Nacional de Taiwán.")
 st.dataframe(u_ranking,width=2000)
 
 #Distribucion de universidades por paises 
-st.markdown("Rusia no solo se destaca por ser el país con las universidades que encabezan el ranking, sino que junto a China y los Estados Unidos es el país con mayor cantidad universidades exitosas")
+st.markdown("Rusia no solo se destaca por ser uno de los paises con las universidades que encabezan el ranking, sino que junto a China y los Estados Unidos es el país con mayor cantidad universidades exitosas")
 
 universidades_por_anno_por_pais = new_df.groupby(['Country', 'Anno'])['University'].count().reset_index(name='Universidades_Por_Año')
 promedio_universidades_por_pais = universidades_por_anno_por_pais.groupby('Country')['Universidades_Por_Año'].sum().reset_index(name='Total_Universidades')
@@ -155,15 +155,18 @@ st.subheader("La transmisión de conocimientos entre los integrantes de un mismo
 st.markdown("Entre las 50 universidades con mayores resultados en la competición, se observa que en algunas universidades se observa transimisión de conocimiento entre sus integrantes de un año a otro; mientras que existen otras en las que no existe transmisión alguna.")
 st.markdown("Además la transmisión de conocimiento suele observarse por pocos años consecutivos. La universidad con mayor transmisión de conocimiento es la Universidad de Buenos Aires en Argentina-FCEN, la cual se ubica en el lugar 28 del ranking")
 df=new_df
+
+def convertir_cadenas_a_listas(lista_de_cadenas):
+    return [cadena.split(",") for cadena in lista_de_cadenas]
+df['Participants'] = df['Participants'].apply(convertir_cadenas_a_listas)
 grafos = {}
 for universidad in df["University"].unique():
     grafo = nx.Graph()
     for index, row in df[df["University"] == universidad].iterrows():
         grafo.add_node(row["Anno"], participants=row["Participants"])
-    
     for nodo1, data1 in grafo.nodes(data=True):
         for nodo2, data2 in grafo.nodes(data=True):
-            if nodo1 != nodo2 and set(data1['participants']).intersection(set(data2['participants'])):
+            if nodo1 != nodo2 and set(data1['participants'][0]).intersection(set(data2['participants'][0])):
                 grafo.add_edge(nodo1, nodo2)
     
     grafos[universidad] = grafo
@@ -174,6 +177,8 @@ fig = go.Figure()
 
 pos = nx.spring_layout(grafo_seleccionado, k=20)
 for nodo in grafo_seleccionado.nodes:
+    grafo_seleccionado.nodes[nodo]['participants']=grafo_seleccionado.nodes[nodo]['participants'][0]
+    posicion_nodo = pos[nodo].tolist()
     fig.add_trace(go.Scatter(x=[pos[nodo][0]], y=[pos[nodo][1]], mode='markers+text', text=str(nodo), marker=dict(size=25),hoverinfo='text', hovertext='<br>'.join(grafo_seleccionado.nodes[nodo]['participants'])))
 for arista in grafo_seleccionado.edges:
     x0, y0 = pos[arista[0]]
@@ -183,7 +188,6 @@ for arista in grafo_seleccionado.edges:
 fig.update_layout(title=f"Grafo de {universidad_seleccionada}",
                  xaxis=dict(visible=False),
                  yaxis=dict(visible=False))
-
 st.plotly_chart(fig)
 
 st.header("Análisis de Cuba", divider="gray")
@@ -236,33 +240,41 @@ st.plotly_chart(fig)
 
 #analisis del conocimiento
 st.subheader("Veamos la transmisión de conocimiento en las universidades cubanas", divider="gray")
-graphs = {} 
+def convertir_cadenas_a_listas(lista_de_cadenas):
+    return [cadena.split(",") for cadena in lista_de_cadenas]
 
-for u in uni:
-    graph = nx.Graph()
-    for i, j in data_cuba[data_cuba["University"] == u].iterrows():
-        graph.add_node(j["Anno"], participant=j["Participants"]) 
-    for n1, d1 in graph.nodes(data=True):
-        for n2, d2 in graph.nodes(data=True):
-            if n1 != n2 and set(d1['participant']).intersection(set(d2['participant'])):
-                graph.add_edge(n1, n2)
+data_cuba['Participants'] = data_cuba['Participants'].apply(convertir_cadenas_a_listas)
+
+st.subheader("Veamos la transmisión de conocimiento en las universidades cubanas", divider="gray")
+
+grafos = {}
+for universidad in data_cuba["University"].unique():
+    grafo = nx.Graph()
+    for index, row in data_cuba[data_cuba["University"] == universidad].iterrows():
+        grafo.add_node(row["Anno"], participants=row["Participants"])
+    for nodo1, data1 in grafo.nodes(data=True):
+        for nodo2, data2 in grafo.nodes(data=True):
+            if nodo1 != nodo2 and set(data1['participants'][0]).intersection(set(data2['participants'][0])):
+                grafo.add_edge(nodo1, nodo2)
     
-    graphs[u] = graph
+    grafos[universidad] = grafo
 
-uni_selec = st.selectbox("Selecciona una universidad:", list(graphs.keys()))
-graph_selec = graphs[uni_selec]
-fig_know = go.Figure()
+universidad_seleccionada = st.selectbox("Selecciona una universidad y observe si existe o no transmisión de conocimiento", list(grafos.keys()))
+grafo_seleccionado = grafos[universidad_seleccionada]
+fig = go.Figure()
 
-p = nx.spring_layout(graph_selec, k=20)
-for i in graph_selec.nodes:
-    fig_know.add_trace(go.Scatter(x=[p[i][0]], y=[p[i][1]], mode='markers+text', text=str(i), marker=dict(size=25), hoverinfo='text', hovertext='<br>'.join(graph_selec.nodes[i]['participant'])))
-for i in graph_selec.edges:
-    x_0, y_0 = p[i[0]]
-    x_1, y_1 = p[i[1]]
-    fig_know.add_trace(go.Scatter(x=[x_0, x_1], y=[y_0, y_1], mode='lines'))
+pos = nx.spring_layout(grafo_seleccionado, k=20)
+for nodo in grafo_seleccionado.nodes:
+    grafo_seleccionado.nodes[nodo]['participants']=grafo_seleccionado.nodes[nodo]['participants'][0]
+    posicion_nodo = pos[nodo].tolist()
+    fig.add_trace(go.Scatter(x=[str(posicion_nodo[0])], y=[str(posicion_nodo[1])], mode='markers+text', text=str(nodo), marker=dict(size=25),hoverinfo='text', hovertext='<br>'.join(grafo_seleccionado.nodes[nodo]['participants'])))
+for arista in grafo_seleccionado.edges:
+    x0, y0 = pos[arista[0]]
+    x1, y1 = pos[arista[1]]
+    fig.add_trace(go.Scatter(x=[x0, x1], y=[y0, y1], mode='lines'))
 
-fig_know.update_layout(title=f"Grafo de {uni_selec}",
+fig.update_layout(title=f"Grafo de {universidad_seleccionada}",
                  xaxis=dict(visible=False),
                  yaxis=dict(visible=False))
 
-st.plotly_chart(fig_know)
+st.plotly_chart(fig)
