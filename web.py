@@ -7,7 +7,8 @@ import plotly.graph_objects as go
 from datetime import datetime as dt
 from genderize import Genderize
 
-st.title("Título pendiente")
+st.title("Desglosando el Éxito: Universidades más exitosas en el ICPC")
+st.image("trofeo.png")
 st.markdown("Toda persona aficionada al mundo de la programación ha escuchado hablar alguna vez sobre la Competencia Internacional Universitaria de Programación, conocida por sus siglas en inglés ICPC (International Collegiate Programming Contest). Esta importante competición desafía a los estudiantes a resolver problemas complejos de programación en un tiempo limitado, poniendo a prueba sus habilidades, creatividad y trabajo en equipo; convirtiéndose en una plataforma perfecta para identificar y promover el talento en informática y ciencias de la computación.")
 st.markdown("En los últimos años, muchas universidades a nivel global han sido representadas con el talento de muchos de sus estudiantes, incluidas las universidades de nuestro país. Por eso hemos analizado cómo se comportan las universidades con mejores resultados en esta competición en los últimos 15 años.")
 st.header("Análisis a Nivel Global", divider="gray")
