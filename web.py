@@ -88,25 +88,22 @@ st.write(df_university)
 
 #transmision de conocimiento
 df=new_df
+
 grafos = {}
 
 for universidad in df["University"].unique():
     grafo = nx.Graph()
     for index, row in df[df["University"] == universidad].iterrows():
-        participantes = row["Participants"]
-        for participante in participantes:
-            grafo.add_node(row["Anno"], participants=participante)
-
-    for i in range(1, len(grafo.nodes)):
-        anno1 = list(grafo.nodes)[i - 1]
-        anno2 = list(grafo.nodes)[i]
-        participantes_anno1 = set(grafo.nodes[anno1]['participants'])
-        participantes_anno2 = set(grafo.nodes[anno2]['participants'])
-        if participantes_anno1.intersection(participantes_anno2):
-            grafo.add_edge(anno1, anno2)
+        grafo.add_node(row["Anno"], participants=row["Participants"])
+    
+    for nodo1, data1 in grafo.nodes(data=True):
+        for nodo2, data2 in grafo.nodes(data=True):
+            if nodo1 != nodo2 and set(data1['participants']).intersection(set(data2['participants'])):
+                grafo.add_edge(nodo1, nodo2)
+    
     grafos[universidad] = grafo
 
-universidad_seleccionada = st.selectbox("Selecciona una universidad:", grafos.keys())
+universidad_seleccionada = st.selectbox("Selecciona una universidad:", list(grafos.keys()))
 grafo_seleccionado = grafos[universidad_seleccionada]
 fig = go.Figure()
 
@@ -119,7 +116,7 @@ for arista in grafo_seleccionado.edges:
     fig.add_trace(go.Scatter(x=[x0, x1], y=[y0, y1], mode='lines'))
 
 fig.update_layout(title=f"Grafo de {universidad_seleccionada}",
-                  xaxis=dict(visible=False),
-                  yaxis=dict(visible=False))
+                 xaxis=dict(visible=False),
+                 yaxis=dict(visible=False))
 
 st.plotly_chart(fig)
