@@ -2,6 +2,8 @@ import json
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import networkx as nx
+import plotly.graph_objects as go
 
 with open('datos.json','r') as a:
     archivos=json.load(a)
@@ -83,3 +85,41 @@ df_filtered = new_df1[new_df1["University"].isin(selected_university) | (selecte
 fig = px.line(df_filtered, x="Anno", y="Prize", color="University", title='Ganancias en ICPC por universidades', markers=True)
 st.plotly_chart(fig)
 st.write(df_university)
+
+#transmision de conocimiento
+df=new_df
+grafos = {}
+
+for universidad in df["University"].unique():
+    grafo = nx.Graph()
+    for index, row in df[df["University"] == universidad].iterrows():
+        participantes = row["Participants"]
+        for participante in participantes:
+            grafo.add_node(row["Anno"], participants=participante)
+
+    for i in range(1, len(grafo.nodes)):
+        anno1 = list(grafo.nodes)[i - 1]
+        anno2 = list(grafo.nodes)[i]
+        participantes_anno1 = set(grafo.nodes[anno1]['participants'])
+        participantes_anno2 = set(grafo.nodes[anno2]['participants'])
+        if participantes_anno1.intersection(participantes_anno2):
+            grafo.add_edge(anno1, anno2)
+    grafos[universidad] = grafo
+
+universidad_seleccionada = st.selectbox("Selecciona una universidad:", grafos.keys())
+grafo_seleccionado = grafos[universidad_seleccionada]
+fig = go.Figure()
+
+pos = nx.spring_layout(grafo_seleccionado)
+for nodo in grafo_seleccionado.nodes:
+    fig.add_trace(go.Scatter(x=[pos[nodo][0]], y=[pos[nodo][1]], mode='markers+text', text=str(nodo)))
+for arista in grafo_seleccionado.edges:
+    x0, y0 = pos[arista[0]]
+    x1, y1 = pos[arista[1]]
+    fig.add_trace(go.Scatter(x=[x0, x1], y=[y0, y1], mode='lines'))
+
+fig.update_layout(title=f"Grafo de {universidad_seleccionada}",
+                  xaxis=dict(visible=False),
+                  yaxis=dict(visible=False))
+
+st.plotly_chart(fig)
