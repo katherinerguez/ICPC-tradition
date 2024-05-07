@@ -187,7 +187,8 @@ fig.update_layout(title=f"Grafo de {universidad_seleccionada}",
 st.plotly_chart(fig)
 
 st.header("Análisis de Cuba", divider="gray")
-st.markdown("Cuba no tiene un puesto entre las 50 universidades con mejores resultados durante los últimos 15 años, sin embargo su desempeño en estas competiciones merece ser analizado")
+st.markdown("Cuba no tiene un puesto entre las 50 universidades con mejores resultados durante los últimos 15 años, sin embargo su desempeño en estas competiciones merece ser analizado.")
+st.markdown("En el evento Cuba cuenta con la participación de varias universidades del país, donde la Universidad de La Habana se destaca por tener la mayor cantidad de equipos que participan en la competición.")
 
 with open('datos_cuba.json','r') as d:
     file=json.load(d)
@@ -200,13 +201,6 @@ for i in data3[0]:
     data3_combinados.append(comb)
 data_cuba= pd.concat(data3_combinados, ignore_index=True)
 
-#analisis de genero
-# genderize = Genderize()
-# names = genderize.get(data_cuba['Participants'])
-# fig_gener = px.pie(names, names='gender', title='Cantidad de hombres y mujeres que han participado')
-# st.plotly_chart(fig_gener)
-
-#analisis de la participacion de las universidades]
 uni=data_cuba['University'].unique()
 sum=[]
 for i in uni:
@@ -221,7 +215,16 @@ fig_uni = px.bar(x=uni, y=sum, color=uni,
                  title='Participación por Universidad en Cuba')
 st.plotly_chart(fig_uni)
 
-#gráfico de puntos para analizar los prizes
+#analisis de genero
+# genderize = Genderize()
+# names = genderize.get(data_cuba['Participants'])
+# fig_gener = px.pie(names, names='gender', title='Cantidad de hombres y mujeres que han participado')
+# st.plotly_chart(fig_gener)
+
+#analisis de la participacion de las universidades]
+
+
+st.markdown("En cuanto a las ganancias que han recibido los integrantes de los equipos en esta competencia, ha sido prácticamente de 0 ganacias, en comparación con las demás universidades que analizamos anteriormente, en Cuba solo se reporta ganancia en el año 2010")
 can_prize = data_cuba.groupby('Anno')['Prize'].sum().reset_index()
 
 # Crear gráfico de puntos con la suma de premios por año
@@ -232,6 +235,7 @@ fig = px.scatter(can_prize, x='Anno', y='Prize',
 st.plotly_chart(fig)
 
 #analisis del conocimiento
+st.subheader("Veamos la transmisión de conocimiento en las universidades cubanas", divider="gray")
 graphs = {} 
 
 for u in uni:
