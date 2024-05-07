@@ -6,6 +6,10 @@ import networkx as nx
 import plotly.graph_objects as go
 from datetime import datetime as dt
 
+st.title("Título pendiente")
+st.markdown("Toda persona aficionada al mundo de la programación ha escuchado hablar alguna vez sobre la Competencia Internacional Universitaria de Programación, conocida por sus siglas en inglés ICPC (International Collegiate Programming Contest). Esta importante competición desafía a los estudiantes a resolver problemas complejos de programación en un tiempo limitado, poniendo a prueba sus habilidades, creatividad y trabajo en equipo; convirtiéndose en una plataforma perfecta para identificar y promover el talento en informática y ciencias de la computación.")
+st.markdown("En los últimos años, muchas universidades a nivel global han sido representadas con el talento de muchos de sus estudiantes, incluidas las universidades de nuestro país. Por eso hemos analizado cómo se comportan las universidades con mejores resultados en esta competición en los últimos 15 años.")
+st.header("Análisis", divider="gray")
 with open('datos.json','r') as a:
     archivos=json.load(a)
 
@@ -49,7 +53,7 @@ u_ranking = u_ranking.reindex(columns=['University', 'Country'])
 u_ranking = u_ranking.drop_duplicates(subset=["University"])
 u_ranking = u_ranking.reset_index(drop=True)
 u_ranking.index += 1
-st.header("Ranking",divider="gray")
+st.markdown("Hoy en día Rusia encabeza el ranking con las 3 universidades con mejores resultados en la competición, seguida por el Instituto de Tecnología de Massachusetts (MIT) en Estados Unidos y la Universidad Nacional de Taiwán.")
 st.dataframe(u_ranking,width=2000)
 
 #Distribucion de universidades por paises 
