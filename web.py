@@ -205,6 +205,7 @@ for i in data3[0]:
     data3_combinados.append(comb)
 data_cuba= pd.concat(data3_combinados, ignore_index=True)
 
+
 uni=data_cuba['University'].unique()
 sum=[]
 for i in uni:
@@ -218,6 +219,15 @@ fig_uni = px.bar(x=uni, y=sum, color=uni,
                          'y': 'Cantidad de participaciones'},
                  title='Participación por Universidad en Cuba')
 st.plotly_chart(fig_uni)
+
+#ranking
+
+df_grouped = data_cuba.groupby(['University', 'Anno'])['Rank'].mean().reset_index()
+df_grouped_by_uni = df_grouped.groupby('University')['Rank'].mean().reset_index()
+
+fig_rank = px.bar(data_cuba, x='University', y='Rank', text='Rank', color='Anno')
+fig_rank.update_layout(yaxis_title='', title='Rank de las universidades por año')
+st.plotly_chart(fig_rank)
 
 #analisis de genero
 # genderize = Genderize()
